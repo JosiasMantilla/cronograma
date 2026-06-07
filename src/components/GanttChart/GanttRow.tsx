@@ -1,6 +1,5 @@
 import { memo } from 'react';
 import { GanttBar } from './GanttBar';
-import { ROW_HEIGHT } from '../../utils/constants';
 import type { IRow, ITarea } from '../../types';
 
 interface GanttRowProps {
@@ -37,22 +36,21 @@ export const GanttRow = memo(
       row.type === 'frente' ? FRENTE_BG : row.type === 'sector' ? SECTOR_BG : TAREA_BG;
 
     return (
+      // Use style from react-window (includes correct height for this row type)
       <div
-        style={{ ...style, height: ROW_HEIGHT }}
+        style={style}
         className={`border-b border-gray-100 dark:border-gray-700/50 ${bgClass} overflow-hidden`}
       >
         <div
           className="relative h-full"
-          style={{
-            width: totalWidth,
-            transform: `translateX(-${panOffset}px)`,
-          }}
+          style={{ width: totalWidth, transform: `translateX(-${panOffset}px)` }}
         >
           {row.type === 'tarea' && (
             <GanttBar
               tarea={row.tarea}
               timelineStart={timelineStart}
               pixelsPerDay={pixelsPerDay}
+              rowHeight={typeof style.height === 'number' ? style.height : 52}
               isSelected={selectedTareaId === row.tarea.id}
               onHover={onHover}
               onRightClick={onRightClick}

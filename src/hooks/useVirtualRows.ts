@@ -1,9 +1,9 @@
 import { useRef } from 'react';
-import type { FixedSizeList } from 'react-window';
+import type { VariableSizeList } from 'react-window';
 
 export function useVirtualRows() {
-  const leftListRef = useRef<FixedSizeList>(null);
-  const rightListRef = useRef<FixedSizeList>(null);
+  const leftListRef = useRef<VariableSizeList>(null);
+  const rightListRef = useRef<VariableSizeList>(null);
   const syncing = useRef(false);
 
   const onLeftScroll = ({ scrollOffset }: { scrollOffset: number }) => {

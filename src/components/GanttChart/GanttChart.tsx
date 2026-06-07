@@ -7,15 +7,15 @@ import {
   useMemo,
   type CSSProperties,
 } from 'react';
-import { FixedSizeList, type ListChildComponentProps } from 'react-window';
+import { VariableSizeList, type ListChildComponentProps } from 'react-window';
 import { TimeHeader } from './TimeHeader';
 import { TodayLine } from './TodayLine';
 import { GanttRow } from './GanttRow';
 import { CustomTooltip } from '../common/CustomTooltip';
 import { getZoomLevelFromPixels } from '../../utils/ganttHelpers';
-import { HEADER_HEIGHT, ROW_HEIGHT } from '../../utils/constants';
+import { HEADER_HEIGHT, ROW_HEIGHT, TAREA_ROW_HEIGHT } from '../../utils/constants';
 import type { IRow, ITarea, ITooltipState } from '../../types';
-import type { FixedSizeList as FixedSizeListType } from 'react-window';
+import type { VariableSizeList as VariableSizeListType } from 'react-window';
 
 interface ItemData {
   rows: IRow[];
@@ -48,7 +48,7 @@ const RowRenderer = memo(({ index, style, data }: ListChildComponentProps<ItemDa
 });
 
 interface GanttChartProps {
-  listRef: React.RefObject<FixedSizeListType | null>;
+  listRef: React.RefObject<VariableSizeListType | null>;
   rows: IRow[];
   panOffset: number;
   pixelsPerDay: number;
@@ -64,6 +64,7 @@ interface GanttChartProps {
   onOpenEdit: (id: string) => void;
   height: number;
   width: number;
+  cutDate?: Date;
 }
 
 export const GanttChart = memo(
@@ -84,6 +85,7 @@ export const GanttChart = memo(
     onOpenEdit,
     height,
     width,
+    cutDate,
   }: GanttChartProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [tooltip, setTooltip] = useState<ITooltipState | null>(null);
@@ -99,6 +101,11 @@ export const GanttChart = memo(
       return () => ro.disconnect();
     }, [onWheelSetup]);
 
+    // Reset size cache when rows change
+    useEffect(() => {
+      listRef.current?.resetAfterIndex(0, false);
+    }, [rows, listRef]);
+
     const handleHover = useCallback(
       (tarea: ITarea | null, x: number, y: number) => {
         setTooltip(tarea ? { tarea, x, y } : null);
@@ -109,6 +116,11 @@ export const GanttChart = memo(
     const zoomLevel = useMemo(
       () => getZoomLevelFromPixels(pixelsPerDay),
       [pixelsPerDay],
+    );
+
+    const getItemSize = useCallback(
+      (index: number) => (rows[index]?.type === 'tarea' ? TAREA_ROW_HEIGHT : ROW_HEIGHT),
+      [rows],
     );
 
     const itemData = useMemo<ItemData>(
@@ -146,26 +158,27 @@ export const GanttChart = memo(
         />
 
         <div className="relative flex-1 overflow-hidden">
-          {/* Today line spans full height */}
           <TodayLine
             timelineStart={timelineStart}
             pixelsPerDay={pixelsPerDay}
             panOffset={panOffset}
             totalHeight={listHeight}
+            cutDate={cutDate}
           />
 
-          <FixedSizeList<ItemData>
+          <VariableSizeList<ItemData>
             ref={listRef}
             height={listHeight}
             width={width}
             itemCount={rows.length}
-            itemSize={ROW_HEIGHT}
+            itemSize={getItemSize}
+            estimatedItemSize={ROW_HEIGHT}
             itemData={itemData}
             onScroll={onScroll}
             overscanCount={5}
           >
             {RowRenderer}
-          </FixedSizeList>
+          </VariableSizeList>
         </div>
 
         {tooltip && <CustomTooltip tooltip={tooltip} containerRect={containerRect} />}

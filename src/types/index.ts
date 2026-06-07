@@ -1,10 +1,19 @@
 export type TipoRestriccion = 'predecesora' | 'recurso' | 'fecha limite';
+export type Prioridad = 'sin_prioridad' | 'normal' | 'alta' | 'critica';
 
 export interface IRestriccion {
   id: string;
   tipo: TipoRestriccion;
+  nombre: string;
   descripcion: string;
   valor?: string;
+  miembros: string[];
+  fechaInicio: Date;
+  fechaFin: Date;
+  fechaFinReal: Date | null;
+  prioridad: Prioridad;
+  avance: number;
+  proyecto: string;
 }
 
 export interface ITarea {
@@ -76,4 +85,29 @@ export interface IEditTareaPayload {
   fechaInicio: Date;
   fechaFin: Date;
   porcentajeAvance: number;
+}
+
+export type TaskEstado = 'completada' | 'en_progreso' | 'no_iniciada' | 'atrasada';
+export type FilterEstado = 'all' | TaskEstado;
+
+export interface IFilterState {
+  search: string;
+  frenteId: string;
+  sectorId: string;
+  estado: FilterEstado;
+}
+
+export interface IAddTareaPayload {
+  nombre: string;
+  fechaInicio: Date;
+  fechaFin: Date;
+  integrantes: string[];
+  porcentajeAvance: number;
+}
+
+export interface IExportRow {
+  frenteNombre: string;
+  sectorNombre: string;
+  tarea: ITarea;
+  estado: TaskEstado;
 }

@@ -19,6 +19,7 @@ export const ZOOM_LEVELS: ZoomLevel[] = [
 ];
 
 export const ROW_HEIGHT = 52;
+export const TAREA_ROW_HEIGHT = 64;
 export const HEADER_HEIGHT = 56;
 export const LEFT_PANEL_WIDTH = 440;
 export const BOTTOM_PANEL_HEIGHT = 190;

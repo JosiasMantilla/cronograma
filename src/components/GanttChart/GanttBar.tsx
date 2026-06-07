@@ -1,26 +1,27 @@
 import { memo, useCallback } from 'react';
 import { differenceInCalendarDays } from 'date-fns';
 import { getBarColor, isDelayed } from '../../utils/ganttHelpers';
-import { ROW_HEIGHT } from '../../utils/constants';
 import type { ITarea } from '../../types';
 
 interface GanttBarProps {
   tarea: ITarea;
   timelineStart: Date;
   pixelsPerDay: number;
+  rowHeight: number;
   isSelected: boolean;
   onHover: (tarea: ITarea | null, x: number, y: number) => void;
   onRightClick: (tareaId: string) => void;
   onDoubleClick: (tareaId: string) => void;
 }
 
-const BAR_PADDING_V = 8;
+const BAR_PADDING_V = 10;
 
 export const GanttBar = memo(
   ({
     tarea,
     timelineStart,
     pixelsPerDay,
+    rowHeight,
     isSelected,
     onHover,
     onRightClick,
@@ -36,7 +37,8 @@ export const GanttBar = memo(
     );
     const left = startDay * pixelsPerDay;
     const width = Math.max((endDay - startDay + 1) * pixelsPerDay, 4);
-    const barHeight = ROW_HEIGHT - BAR_PADDING_V * 2;
+    const barHeight = rowHeight - BAR_PADDING_V * 2;
+    const topOffset = Math.floor((rowHeight - barHeight) / 2);
 
     const colorClass = getBarColor(tarea.porcentajeAvance, isInvalid);
 
@@ -77,12 +79,7 @@ export const GanttBar = memo(
         className={`absolute rounded cursor-pointer transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-400 ${colorClass} ${
           isSelected ? 'ring-2 ring-blue-600 dark:ring-blue-400' : ''
         } ${delayed ? 'bar-delayed' : ''}`}
-        style={{
-          left,
-          top: BAR_PADDING_V,
-          width,
-          height: barHeight,
-        }}
+        style={{ left, top: topOffset, width, height: barHeight }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onMouseMove={handleMouseMove}
@@ -93,11 +90,11 @@ export const GanttBar = memo(
           if (e.key === ' ') { e.preventDefault(); onDoubleClick(tarea.id); }
         }}
       >
-        {/* Progress fill */}
+        {/* Progress overlay */}
         {!isInvalid && tarea.porcentajeAvance > 0 && tarea.porcentajeAvance < 100 && (
           <div
-            className="absolute top-0 left-0 h-full rounded bg-black/20"
-            style={{ width: `${100 - tarea.porcentajeAvance}%`, right: 0, left: 'auto' }}
+            className="absolute top-0 right-0 h-full rounded bg-black/20"
+            style={{ width: `${100 - tarea.porcentajeAvance}%` }}
             aria-hidden="true"
           />
         )}

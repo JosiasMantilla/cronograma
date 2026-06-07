@@ -1,9 +1,9 @@
-import { memo, useMemo, type CSSProperties } from 'react';
-import { FixedSizeList, type ListChildComponentProps } from 'react-window';
+import { memo, useMemo, useCallback, useEffect, type CSSProperties } from 'react';
+import { VariableSizeList, type ListChildComponentProps } from 'react-window';
 import { TreeNode } from './TreeNode';
-import { ROW_HEIGHT, LEFT_PANEL_WIDTH, HEADER_HEIGHT } from '../../utils/constants';
+import { ROW_HEIGHT, TAREA_ROW_HEIGHT, LEFT_PANEL_WIDTH, HEADER_HEIGHT } from '../../utils/constants';
 import type { IRow } from '../../types';
-import type { FixedSizeList as FixedSizeListType } from 'react-window';
+import type { VariableSizeList as VariableSizeListType } from 'react-window';
 
 interface ItemData {
   rows: IRow[];
@@ -26,7 +26,7 @@ const RowRenderer = memo(({ index, style, data }: ListChildComponentProps<ItemDa
 });
 
 interface TreePanelProps {
-  listRef: React.RefObject<FixedSizeListType | null>;
+  listRef: React.RefObject<VariableSizeListType | null>;
   rows: IRow[];
   selectedTareaId: string | null;
   onScroll: (args: { scrollOffset: number }) => void;
@@ -44,7 +44,25 @@ const HEADER_COLS = [
 ];
 
 export const TreePanel = memo(
-  ({ listRef, rows, selectedTareaId, onScroll, onToggle, onSelect, height }: TreePanelProps) => {
+  ({
+    listRef,
+    rows,
+    selectedTareaId,
+    onScroll,
+    onToggle,
+    onSelect,
+    height,
+  }: TreePanelProps) => {
+    const getItemSize = useCallback(
+      (index: number) => (rows[index]?.type === 'tarea' ? TAREA_ROW_HEIGHT : ROW_HEIGHT),
+      [rows],
+    );
+
+    // Reset size cache whenever rows change (type/order may have changed)
+    useEffect(() => {
+      listRef.current?.resetAfterIndex(0, false);
+    }, [rows, listRef]);
+
     const itemData = useMemo<ItemData>(
       () => ({ rows, selectedTareaId, onToggle, onSelect }),
       [rows, selectedTareaId, onToggle, onSelect],
@@ -59,7 +77,6 @@ export const TreePanel = memo(
         role="tree"
         aria-label="Jerarquía de frentes y sectores"
       >
-        {/* Column headers */}
         <div
           className="flex items-end pb-1 px-2 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shrink-0"
           style={{ height: HEADER_HEIGHT }}
@@ -75,19 +92,19 @@ export const TreePanel = memo(
           ))}
         </div>
 
-        {/* Virtual list */}
-        <FixedSizeList<ItemData>
+        <VariableSizeList<ItemData>
           ref={listRef}
           height={listHeight}
           width={LEFT_PANEL_WIDTH}
           itemCount={rows.length}
-          itemSize={ROW_HEIGHT}
+          itemSize={getItemSize}
+          estimatedItemSize={ROW_HEIGHT}
           itemData={itemData}
           onScroll={onScroll}
           overscanCount={5}
         >
           {RowRenderer}
-        </FixedSizeList>
+        </VariableSizeList>
       </div>
     );
   },
