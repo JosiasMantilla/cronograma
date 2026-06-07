@@ -1,0 +1,41 @@
+/* Diagonal stripe overlay for delayed tasks */
+.bar-delayed {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.18),
+    rgba(0, 0, 0, 0.18) 4px,
+    transparent 4px,
+    transparent 12px
+  );
+}
+
+/* Smooth gantt horizontal transition */
+.gantt-inner {
+  will-change: transform;
+}
+
+/* Prevent text selection during drag */
+.gantt-noscroll {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* React-window scroll container */
+.ReactVirtualized__List::-webkit-scrollbar,
+[data-virtual-list]::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[data-virtual-list]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-virtual-list]::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.dark [data-virtual-list]::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}

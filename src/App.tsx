@@ -1,122 +1,155 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Toolbar } from './components/Toolbar/Toolbar';
+import { TreePanel } from './components/TreePanel/TreePanel';
+import { GanttChart } from './components/GanttChart/GanttChart';
+import { ConstraintsTable } from './components/ConstraintsTable/ConstraintsTable';
+import { EditTareaModal } from './components/Modals/EditTareaModal';
+import { useGanttData } from './hooks/useGanttData';
+import { useZoomAndPan } from './hooks/useZoomAndPan';
+import { useVirtualRows } from './hooks/useVirtualRows';
+import { clamp } from './utils/ganttHelpers';
+import { BOTTOM_PANEL_HEIGHT, LEFT_PANEL_WIDTH, TOOLBAR_HEIGHT } from './utils/constants';
+import './styles/globals.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const {
+    visibleRows,
+    selectedTareaId,
+    selectedTarea,
+    editingTarea,
+    pixelsPerDay,
+    setPixelsPerDay,
+    panOffset,
+    setPanOffset,
+    hideSectors,
+    hideTasks,
+    isDarkMode,
+    setIsDarkMode,
+    timelineStart,
+    timelineEnd,
+    totalTimelineWidth,
+    toggleExpanded,
+    selectTarea,
+    openEdit,
+    closeEdit,
+    updateTarea,
+    setHideSectors,
+    setHideTasks,
+    setCronogramaGeneral,
+    setCronogramaEspecifico,
+  } = useGanttData();
+
+  // Apply dark mode class on <html>
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+  }, [isDarkMode]);
+
+  const [ganttDims, setGanttDims] = useState({ width: 800, height: 600 });
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth - LEFT_PANEL_WIDTH;
+      const h = window.innerHeight - TOOLBAR_HEIGHT - BOTTOM_PANEL_HEIGHT;
+      setGanttDims({ width: Math.max(w, 200), height: Math.max(h, 200) });
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  const mainHeight = ganttDims.height;
+  const maxPanOffset = Math.max(0, totalTimelineWidth - ganttDims.width);
+
+  const { leftListRef, rightListRef, onLeftScroll, onRightScroll } = useVirtualRows();
+
+  const { handleWheel, handleMouseDown, panLeft, panRight, goToToday, canPanLeft, canPanRight } =
+    useZoomAndPan({
+      pixelsPerDay,
+      setPixelsPerDay,
+      panOffset,
+      setPanOffset,
+      totalTimelineWidth,
+      ganttViewWidth: ganttDims.width,
+      timelineStart,
+    });
+
+  const wheelCleanupRef = useRef<(() => void) | null>(null);
+
+  const onWheelSetup = useCallback(
+    (el: HTMLElement) => {
+      if (wheelCleanupRef.current) wheelCleanupRef.current();
+      const handler = (e: WheelEvent) => handleWheel(e);
+      el.addEventListener('wheel', handler, { passive: false });
+      wheelCleanupRef.current = () => el.removeEventListener('wheel', handler);
+    },
+    [handleWheel],
+  );
+
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+  }, []);
+
+  // Clamp pan when limits shrink
+  useEffect(() => {
+    if (panOffset > maxPanOffset) setPanOffset(clamp(panOffset, 0, maxPanOffset));
+  }, [maxPanOffset, panOffset, setPanOffset]);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="flex flex-col h-screen overflow-hidden bg-gray-100 dark:bg-gray-950">
+      <Toolbar
+        hideSectors={hideSectors}
+        hideTasks={hideTasks}
+        isDarkMode={isDarkMode}
+        pixelsPerDay={pixelsPerDay}
+        canPanLeft={canPanLeft}
+        canPanRight={canPanRight}
+        onToggleSectors={() => setHideSectors((v) => !v)}
+        onToggleTasks={() => setHideTasks((v) => !v)}
+        onToggleDark={() => setIsDarkMode((v) => !v)}
+        onCronogramaGeneral={setCronogramaGeneral}
+        onCronogramaEspecifico={setCronogramaEspecifico}
+        onPanLeft={panLeft}
+        onPanRight={panRight}
+        onGoToToday={goToToday}
+        onZoomChange={setPixelsPerDay}
+      />
 
-      <div className="ticks"></div>
+      <div className="flex flex-1 overflow-hidden" style={{ height: mainHeight }}>
+        <TreePanel
+          listRef={leftListRef}
+          rows={visibleRows}
+          selectedTareaId={selectedTareaId}
+          onScroll={onLeftScroll}
+          onToggle={toggleExpanded}
+          onSelect={selectTarea}
+          height={mainHeight}
+        />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <GanttChart
+          listRef={rightListRef}
+          rows={visibleRows}
+          panOffset={panOffset}
+          pixelsPerDay={pixelsPerDay}
+          timelineStart={timelineStart}
+          timelineEnd={timelineEnd}
+          totalWidth={totalTimelineWidth}
+          selectedTareaId={selectedTareaId}
+          onScroll={onRightScroll}
+          onWheelSetup={onWheelSetup}
+          onMouseDown={handleMouseDown}
+          onContextMenu={handleContextMenu}
+          onSelectTarea={selectTarea}
+          onOpenEdit={openEdit}
+          height={mainHeight}
+          width={ganttDims.width}
+        />
+      </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <ConstraintsTable selectedTarea={selectedTarea} />
+
+      {editingTarea && (
+        <EditTareaModal tarea={editingTarea} onSave={updateTarea} onClose={closeEdit} />
+      )}
+    </div>
+  );
 }
-
-export default App
