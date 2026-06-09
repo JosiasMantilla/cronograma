@@ -26,7 +26,7 @@ export const mockData: IFrente[] = [
                 nombre: 'Roca en Fundación',
                 descripcion: 'Presencia de roca dura en zona de fundación del cajón de contención impide avance de excavación mecánica; requiere voladura controlada previa',
                 valor: 'Zona K+120 a K+145',
-                miembros: ['Carlos Mendoza', 'Ing. Geotécnico'],
+                miembros: ['Julio Mendoza', 'Ing. Geotécnico'],
                 fechaInicio: new Date('2026-01-05'),
                 fechaFin: new Date('2026-01-20'),
                 fechaFinReal: new Date('2026-01-18'),
@@ -43,7 +43,7 @@ export const mockData: IFrente[] = [
             fechaFin: new Date('2026-03-20'),
             duracionDias: 32,
             porcentajeAvance: 85,
-            integrantes: ['Pedro García', 'María Rodríguez', 'Juan Pérez'],
+            integrantes: ['Pedro Urbina', 'Lola Rodríguez', 'Juan Pérez'],
             restricciones: [
               {
                 id: 'r2',
