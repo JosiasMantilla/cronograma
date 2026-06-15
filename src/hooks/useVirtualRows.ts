@@ -10,14 +10,18 @@ export function useVirtualRows() {
     if (syncing.current) return;
     syncing.current = true;
     rightListRef.current?.scrollTo(scrollOffset);
-    syncing.current = false;
+    requestAnimationFrame(() => {
+      syncing.current = false;
+    });
   };
 
   const onRightScroll = ({ scrollOffset }: { scrollOffset: number }) => {
     if (syncing.current) return;
     syncing.current = true;
     leftListRef.current?.scrollTo(scrollOffset);
-    syncing.current = false;
+    requestAnimationFrame(() => {
+      syncing.current = false;
+    });
   };
 
   return { leftListRef, rightListRef, onLeftScroll, onRightScroll };
