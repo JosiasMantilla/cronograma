@@ -14,7 +14,7 @@ interface GanttBarProps {
   onDoubleClick: (tareaId: string) => void;
 }
 
-const BAR_PADDING_V = 10;
+const BAR_PADDING_V = 16;
 
 export const GanttBar = memo(
   ({
@@ -98,9 +98,32 @@ export const GanttBar = memo(
             aria-hidden="true"
           />
         )}
+        {/* Fecha inicio */}
+        {width > 60 && (
+          <span
+            className="absolute left-1 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-white pointer-events-none"
+          >
+            {tarea.fechaInicio.toLocaleDateString('es-PE',{
+              day : '2-digit',
+              month : '2-digit',
+            })}
+          </span>
+        )}
+
+        {/* Fecha fin */}
+        {width > 60 && (         
+          <span
+            className="absolute right-1 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-white pointer-events-none"
+          >
+            {tarea.fechaFin.toLocaleDateString('es-PE', {
+              day : '2-digit',
+              month : '2-digit',
+            })}
+          </span>
+        )}
         {/* Label */}
         {width > 40 && (
-          <span className="absolute inset-0 flex items-center px-1.5 text-[10px] font-semibold text-white truncate pointer-events-none">
+          <span className="absolute inset-0 flex items-center px-10 text-[10px] font-semibold text-white truncate pointer-events-none">
             {tarea.nombre}
           </span>
         )}
