@@ -46,6 +46,29 @@ export function useGanttData() {
         const sectorExpanded = expandedSet.has(sector.id);
 
         if (!hideSectors) {
+          
+          const fechaInicioSector = 
+          sector.tareas.length > 0 
+          ? new Date(
+            Math.min(
+              ...sector.tareas.map(t => 
+                t.fechaInicio.getTime()
+                )
+              )
+            )
+          : null;
+
+          const fechaFinSector =
+          sector.tareas.length > 0
+          ? new Date(
+            Math.max(
+              ...sector.tareas.map(t =>
+                t.fechaFin.getTime()
+                )
+              )
+            )
+          : null;
+
           rows.push({
             type: 'sector',
             id: sector.id,
@@ -53,6 +76,8 @@ export function useGanttData() {
             frente,
             sector,
             isExpanded: sectorExpanded,
+            fechaInicioSector,
+            fechaFinSector,
           });
 
           if (sectorExpanded && !hideTasks) {

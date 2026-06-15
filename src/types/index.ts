@@ -56,6 +56,8 @@ export interface ISectorRow {
   frente: IFrente;
   sector: ISector;
   isExpanded: boolean;
+  fechaInicioSector?: Date | null;
+  fechaFinSector?: Date | null;
 }
 
 export interface ITareaRow {

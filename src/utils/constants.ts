@@ -32,3 +32,5 @@ export const MIN_PIXELS_PER_DAY = 1;
 export const MAX_PIXELS_PER_DAY = 150;
 
 export const LS_KEY = 'gantt_v1';
+
+export const SECTOR_ROW_HEIGHT = 70;

@@ -1,7 +1,7 @@
 import { memo, useMemo, useCallback, useEffect, type CSSProperties } from 'react';
 import { VariableSizeList, type ListChildComponentProps } from 'react-window';
 import { TreeNode } from './TreeNode';
-import { ROW_HEIGHT, TAREA_ROW_HEIGHT, LEFT_PANEL_WIDTH, HEADER_HEIGHT } from '../../utils/constants';
+import { ROW_HEIGHT, TAREA_ROW_HEIGHT, LEFT_PANEL_WIDTH, HEADER_HEIGHT,SECTOR_ROW_HEIGHT } from '../../utils/constants';
 import type { IRow } from '../../types';
 import type { VariableSizeList as VariableSizeListType } from 'react-window';
 
@@ -54,13 +54,23 @@ export const TreePanel = memo(
     height,
   }: TreePanelProps) => {
     const getItemSize = useCallback(
-      (index: number) => (rows[index]?.type === 'tarea' ? TAREA_ROW_HEIGHT : ROW_HEIGHT),
+      (index: number) => {
+        const row = rows[index];
+
+        if (row?.type === 'tarea')
+          return TAREA_ROW_HEIGHT;
+
+        if (row?.type === 'sector')
+        return SECTOR_ROW_HEIGHT;
+
+      return ROW_HEIGHT;
+      },
       [rows],
     );
 
     // Reset size cache whenever rows change (type/order may have changed)
     useEffect(() => {
-      listRef.current?.resetAfterIndex(0, false);
+      listRef.current?.resetAfterIndex(0, true);
     }, [rows, listRef]);
 
     const itemData = useMemo<ItemData>(
@@ -101,7 +111,7 @@ export const TreePanel = memo(
           estimatedItemSize={ROW_HEIGHT}
           itemData={itemData}
           onScroll={onScroll}
-          overscanCount={5}
+          overscanCount={15}
         >
           {RowRenderer}
         </VariableSizeList>

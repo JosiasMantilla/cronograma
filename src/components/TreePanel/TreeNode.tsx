@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react';
 import { TareaDetails } from './TareaDetails';
-import { ROW_HEIGHT } from '../../utils/constants';
+import { ROW_HEIGHT, SECTOR_ROW_HEIGHT } from '../../utils/constants';
 import type { IRow } from '../../types';
 
 interface TreeNodeProps {
@@ -59,7 +59,8 @@ export const TreeNode = memo(
 
     return (
       <div
-        style={{ ...style, height: ROW_HEIGHT, paddingLeft: indent + 8 }}
+        style={{ ...style, height: row.type ==='sector' 
+        ? SECTOR_ROW_HEIGHT : ROW_HEIGHT, paddingLeft: indent + 8 }}
         role="treeitem"
         tabIndex={0}
         aria-expanded={row.isExpanded}
@@ -79,7 +80,21 @@ export const TreeNode = memo(
           {row.type === 'frente' ? '🏗' : '📋'}
         </span>
 
-        <span className="truncate flex-1">{label}</span>
+        <div className="flex-1 min-w-0">
+          <div className="truncate">
+            {label}
+           </div>
+
+            {row.type === 'sector' && (
+              <div className="text-[10px] whitespace-nowrap text-gray-500 dark:text-gray-400">
+                Inicio:{' '}
+                {row.fechaInicioSector?.toLocaleDateString('es-PE')}
+                {' → '}
+                Fin:{' '}
+                {row.fechaFinSector?.toLocaleDateString('es-PE')}
+              </div>
+            )} 
+        </div>
 
         <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">{countLabel}</span>
       </div>
